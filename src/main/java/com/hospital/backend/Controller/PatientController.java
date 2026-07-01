@@ -31,6 +31,15 @@ public class PatientController {
         return patientRepository.findAll();
     }
 
-    
+    @DeleteMapping("/api/patient/delete/{id}")
+    public String deletePatient(@PathVariable Long id) {
+
+        if (!patientRepository.existsById(id)) {
+            return "Patient Not Found";
+        }
+
+        patientRepository.deleteById(id);
+        return "Patient Deleted Successfully";
+    }
 
 }

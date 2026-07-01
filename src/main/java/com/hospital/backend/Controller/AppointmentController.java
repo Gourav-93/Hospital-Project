@@ -32,6 +32,13 @@ public class AppointmentController {
         return appointmentRepository.findAll();
     }
 
-    
+    @DeleteMapping("/api/appointment/delete/{id}")
+    public String deleteAppointment(@PathVariable Long id) {
+        if (!appointmentRepository.existsById(id)) {
+            return "Appointment Not Found";
+        }
+        appointmentRepository.deleteById(id);
+        return "Appointment Deleted Successfully";
+    }
 
 }

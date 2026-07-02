@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MedCare - Dashboard</title>
+  <!-- Premium UI Overhaul -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Glass Navbar -->
+  <nav class="glass-nav" data-aos="fade-down" data-aos-duration="1000">
+    <a href="index.html" class="nav-brand"><i class="fas fa-heartbeat"></i> MedCare</a>
+    <div class="nav-links" style="display: flex; align-items: center;">
+      <a href="doctors.html">Doctors</a>
+      <a href="patients.html">Patients</a>
+      <a href="appointments.html">Appointments</a>
+      <a href="index.html" class="btn" style="margin-left: 2rem;"><i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i> Exit</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; margin-top: 2rem;" data-aos="fade-up">
+      <div>
+        <h1 class="text-gradient" style="font-size: 3rem;">Overview Dashboard</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem;">Real-time hospital analytics and performance.</p>
+      </div>
+      <div>
+        <button class="btn btn-outline" style="padding: 0.6rem 1.2rem;"><i class="fas fa-download" style="margin-right: 0.5rem;"></i> Export Report</button>
+      </div>
+    </div>
+
+    <!-- Animated Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+        <h3><div style="background: rgba(37,99,235,0.1); padding: 0.5rem; border-radius: 8px; color: var(--accent-blue);"><i class="fas fa-user-md"></i></div> Total Doctors</h3>
+        <p id="d-count"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--border-light);"></i></p>
+      </div>
+      <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+        <h3><div style="background: rgba(6,182,212,0.1); padding: 0.5rem; border-radius: 8px; color: var(--accent-cyan);"><i class="fas fa-users"></i></div> Total Patients</h3>
+        <p id="p-count"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--border-light);"></i></p>
+      </div>
+      <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+        <h3><div style="background: rgba(16,185,129,0.1); padding: 0.5rem; border-radius: 8px; color: var(--accent-green);"><i class="fas fa-calendar-check"></i></div> Appointments</h3>
+        <p id="a-count"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--border-light);"></i></p>
+      </div>
+    </div>
+
+    <!-- Analytics Chart Placeholder -->
+    <div class="card" data-aos="fade-up" data-aos-delay="400">
+      <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-chart-area text-primary"></i> System Analytics</h2>
+      <div style="height: 300px; background: linear-gradient(180deg, rgba(37,99,235,0.03) 0%, transparent 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 1px dashed rgba(37,99,235,0.2); position: relative; overflow: hidden;">
+        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 100 20\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0,20 L0,10 Q25,0 50,10 T100,10 L100,20 Z\" fill=\"rgba(37,99,235,0.05)\"/></svg>') no-repeat bottom; background-size: cover;"></div>
+        <p style="color: var(--text-muted); z-index: 1; font-weight: 500;"><i class="fas fa-lock" style="margin-right: 0.5rem;"></i> Premium Charts Integration Ready</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AOS Script -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true, easing: 'ease-out-cubic', duration: 800 });</script>
+
+  <!-- Core Logic -->
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    async function loadStats() {
+      try {
+        const [docs, pats, apts] = await Promise.all([
+          window.api.getDoctors(), window.api.getPatients(), window.api.getAppointments()
+        ]);
+
+        const animateValue = (id, start, end, duration) => {
+          if (start === end) return;
+          let range = end - start;
+          let current = start;
+          let increment = end > start ? 1 : -1;
+          let stepTime = Math.abs(Math.floor(duration / range));
+          let obj = document.getElementById(id);
+          let timer = setInterval(function () {
+            current += increment;
+            obj.innerText = current;
+            if (current === end) {
+              clearInterval(timer);
+              obj.style.transform = "scale(1.1)";
+              setTimeout(() => obj.style.transform = "scale(1)", 200);
+            }
+          }, stepTime);
+        }
+
+        document.getElementById('d-count').innerText = "0";
+        document.getElementById('p-count').innerText = "0";
+        document.getElementById('a-count').innerText = "0";
+
+        animateValue('d-count', 0, docs.length || 0, 1500);
+        animateValue('p-count', 0, pats.length || 0, 1500);
+        animateValue('a-count', 0, apts.length || 0, 1500);
+
+      } catch (e) {
+        console.error(e);
+        window.showToast("Failed to load statistics", "error");
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadStats);
+  </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patients - MedCare</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Glass Navbar -->
+  <nav class="glass-nav" data-aos="fade-down" data-aos-duration="1000">
+    <a href="index.html" class="nav-brand"><i class="fas fa-heartbeat"></i> MedCare</a>
+    <div class="nav-links" style="display: flex; align-items: center;">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="doctors.html">Doctors</a>
+      <a href="appointments.html">Appointments</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; margin-top: 2rem;" data-aos="fade-up">
+      <div>
+        <h1 class="text-gradient" style="font-size: 3rem;">Patient Registry</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem;">Securely manage patient demographics and histories.</p>
+      </div>
+    </div>
+
+    <!-- Animated Form Card -->
+    <div class="card" data-aos="fade-up" data-aos-delay="100" style="padding: 3rem;">
+      <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-bed text-primary"></i> Admit Patient</h2>
+      <form id="pat-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; align-items: flex-start;">
+        <div class="form-group"><input type="text" id="name" placeholder=" " required><label>Full Name</label></div>
+        <div class="form-group"><input type="number" id="age" placeholder=" " required><label>Age</label></div>
+        <div class="form-group">
+          <select id="gender" required>
+            <option value="" disabled selected hidden></option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+          <label>Gender</label>
+        </div>
+        <div class="form-group"><input type="text" id="symptoms" placeholder=" " required><label>Primary Symptoms</label></div>
+        <div class="form-group"><input type="text" id="desc" placeholder=" "><label>Medical History (Optional)</label></div>
+        <div class="form-group"><input type="text" id="avatar" placeholder=" "><label>Avatar URL (Optional)</label></div>
+        
+        <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 1rem;">
+          <button type="submit" class="btn" style="padding: 1rem 2.5rem; box-shadow: var(--shadow-glow-cyan);"><i class="fas fa-user-plus" style="margin-right: 0.75rem;"></i> Register Patient</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Enterprise Table -->
+    <div class="card" data-aos="fade-up" data-aos-delay="200" style="padding: 0; overflow: hidden; background: transparent; border: none; box-shadow: none;">
+      <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-clipboard-list text-secondary"></i> Active Records</h2>
+      <div class="table-wrapper">
+        <table id="patients-table">
+          <thead>
+            <tr>
+              <th>Patient Profile</th>
+              <th>Demographics</th>
+              <th>Current Status/Symptoms</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="list">
+            <tr><td colspan="4" style="text-align: center; padding: 4rem;"><i class="fas fa-spinner fa-spin text-primary" style="font-size: 2rem;"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true, easing: 'ease-out-cubic', duration: 800 });</script>
+
+  <!-- Core Logic -->
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    async function loadList() {
+      try {
+        const data = await window.api.getPatients();
+        const tbody = document.getElementById('list');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-muted); font-weight: 500;">No active patients.</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = data.map((p, index) => `
+          <tr data-aos="fade-up" data-aos-delay="${index * 50}" data-aos-offset="-50">
+            <td>
+              <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; box-shadow: var(--shadow-sm); border: 2px solid #FFFFFF;">
+                  <img src="${p.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div>
+                  <strong style="font-size: 1.05rem;">${p.name}</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;"><i class="fas fa-file-medical" style="margin-right:0.3rem;"></i>${p.description || 'No prior history'}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <span class="badge badge-warning" style="background: var(--bg-main); border: 1px solid var(--border-light); color: var(--text-primary);"><i class="fas fa-birthday-cake text-muted" style="margin-right: 0.4rem;"></i>${p.age} Yrs</span>
+                <span class="badge badge-warning" style="background: var(--bg-main); border: 1px solid var(--border-light); color: var(--text-primary);"><i class="fas fa-venus-mars text-muted" style="margin-right: 0.4rem;"></i>${p.gender}</span>
+              </div>
+            </td>
+            <td><span class="badge badge-warning" style="background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A;"><i class="fas fa-virus" style="margin-right: 0.4rem;"></i>${p.symptoms}</span></td>
+            <td style="text-align: right;">
+              <button onclick="delPatient(${p.id})" class="btn btn-outline" style="padding: 0.5rem; border-color: var(--border-light); color: var(--text-muted);"><i class="fas fa-times"></i></button>
+            </td>
+          </tr>
+        `).join('');
+        setTimeout(() => { AOS.refresh(); }, 100);
+      } catch (e) {
+        console.error(e);
+        window.showToast("Failed to load patients", "error");
+      }
+    }
+
+    document.getElementById('pat-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      btn.style.opacity = '0.7';
+
+      const payload = {
+        name: document.getElementById('name').value,
+        age: parseInt(document.getElementById('age').value),
+        gender: document.getElementById('gender').value,
+        symptoms: document.getElementById('symptoms').value,
+        description: document.getElementById('desc').value,
+        avatar: document.getElementById('avatar').value
+      };
+      
+      try {
+        await window.api.createPatient(payload);
+        e.target.reset();
+        window.showToast("Patient admitted successfully!", "success");
+        loadList();
+      } catch(err) {
+        window.showToast("Failed to register patient", "error");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+      }
+    });
+
+    window.delPatient = async (id) => {
+      if(confirm('Discharge this patient and remove records?')) {
+        try {
+          await window.api.deletePatient(id);
+          window.showToast("Patient records removed", "success");
+          loadList();
+        } catch(err) {
+          window.showToast("Failed to remove patient", "error");
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', loadList);
+  </script>
+</body>
+</html>

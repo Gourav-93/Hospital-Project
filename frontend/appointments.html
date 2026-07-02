@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Appointments - MedCare</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Glass Navbar -->
+  <nav class="glass-nav" data-aos="fade-down" data-aos-duration="1000">
+    <a href="index.html" class="nav-brand"><i class="fas fa-heartbeat"></i> MedCare</a>
+    <div class="nav-links" style="display: flex; align-items: center;">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="doctors.html">Doctors</a>
+      <a href="patients.html">Patients</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; margin-top: 2rem;" data-aos="fade-up">
+      <div>
+        <h1 class="text-gradient" style="font-size: 3rem;">Appointments</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem;">Schedule and manage consultations seamlessly.</p>
+      </div>
+    </div>
+
+    <!-- Animated Form Card -->
+    <div class="card" data-aos="fade-up" data-aos-delay="100" style="padding: 3rem;">
+      <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-calendar-check text-success"></i> Book Session</h2>
+      <form id="apt-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; align-items: flex-start;">
+        <div class="form-group">
+          <select id="doctorId" required><option value="" disabled selected hidden></option></select>
+          <label>Select Physician</label>
+        </div>
+        <div class="form-group">
+          <select id="patientId" required><option value="" disabled selected hidden></option></select>
+          <label>Select Patient</label>
+        </div>
+        <div class="form-group"><input type="date" id="date" required><label style="top: 0.35rem; font-size: 0.75rem; color: var(--accent-blue); font-weight: 600;">Date</label></div>
+        <div class="form-group"><input type="time" id="time" required><label style="top: 0.35rem; font-size: 0.75rem; color: var(--accent-blue); font-weight: 600;">Time</label></div>
+        <div class="form-group">
+          <select id="status" required>
+            <option value="Pending" selected>Pending</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <label style="top: 0.35rem; font-size: 0.75rem; color: var(--accent-blue); font-weight: 600;">Status</label>
+        </div>
+        
+        <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 1rem;">
+          <button type="submit" class="btn" style="padding: 1rem 2.5rem; background: var(--text-primary);"><i class="fas fa-check" style="margin-right: 0.75rem;"></i> Schedule Appointment</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Enterprise Table -->
+    <div class="card" data-aos="fade-up" data-aos-delay="200" style="padding: 0; overflow: hidden; background: transparent; border: none; box-shadow: none;">
+      <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-list-alt text-secondary"></i> Schedule Overview</h2>
+      <div class="table-wrapper">
+        <table id="appointments-table">
+          <thead>
+            <tr>
+              <th>Tracking ID</th>
+              <th>Physician</th>
+              <th>Patient</th>
+              <th>Date & Time</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="list">
+            <tr><td colspan="6" style="text-align: center; padding: 4rem;"><i class="fas fa-spinner fa-spin text-primary" style="font-size: 2rem;"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true, easing: 'ease-out-cubic', duration: 800 });</script>
+
+  <!-- Core Logic -->
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let doctorMap = {};
+    let patientMap = {};
+
+    async function loadDropdowns() {
+      try {
+        const [docs, pats] = await Promise.all([window.api.getDoctors(), window.api.getPatients()]);
+        
+        const docSelect = document.getElementById('doctorId');
+        docs.forEach(d => { doctorMap[d.id] = d; });
+        docSelect.insertAdjacentHTML('beforeend', docs.map(d => `<option value="${d.id}">${d.name} (${d.speciality})</option>`).join(''));
+        
+        const patSelect = document.getElementById('patientId');
+        pats.forEach(p => { patientMap[p.id] = p; });
+        patSelect.insertAdjacentHTML('beforeend', pats.map(p => `<option value="${p.id}">${p.name}</option>`).join(''));
+      } catch (e) {
+        console.error("Error loading dropdowns", e);
+        window.showToast("Failed to load database connections", "error");
+      }
+    }
+
+    async function loadList() {
+      try {
+        const data = await window.api.getAppointments();
+        const tbody = document.getElementById('list');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted); font-weight: 500;">No appointments on schedule.</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = data.map((a, index) => {
+          const doc = doctorMap[a.doctorId] || { name: 'Unknown' };
+          const pat = patientMap[a.patientId] || { name: 'Unknown' };
+          
+          let badgeClass = 'badge-warning';
+          if(a.status === 'Confirmed') { badgeClass = 'badge-success'; }
+          if(a.status === 'Completed') { badgeClass = 'badge-primary'; }
+          
+          return `
+          <tr data-aos="fade-up" data-aos-delay="${index * 50}" data-aos-offset="-50">
+            <td style="color: var(--text-muted); font-family: monospace; letter-spacing: 1px;">#${a.id.toString().padStart(4, '0')}</td>
+            <td><strong><i class="fas fa-user-md text-primary" style="margin-right:0.6rem;"></i>${doc.name}</strong></td>
+            <td><i class="fas fa-user text-muted" style="margin-right:0.6rem;"></i>${pat.name}</td>
+            <td>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span style="font-weight: 500;"><i class="far fa-calendar text-muted" style="margin-right:0.4rem;"></i>${a.date}</span>
+                <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="far fa-clock" style="margin-right: 0.2rem;"></i>${a.time}</span>
+              </div>
+            </td>
+            <td>
+              <span class="badge ${badgeClass}"><i class="fas fa-circle" style="font-size: 0.4rem; vertical-align: middle; margin-right: 0.4rem;"></i>${a.status}</span>
+            </td>
+            <td style="text-align: right;">
+              <button onclick="delApt(${a.id})" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-color: var(--border-light);"><i class="fas fa-times" style="margin-right: 0.4rem;"></i> Cancel</button>
+            </td>
+          </tr>
+        `}).join('');
+        
+        setTimeout(() => { AOS.refresh(); }, 100);
+      } catch (e) {
+        console.error(e);
+        window.showToast("Failed to sync appointments", "error");
+      }
+    }
+
+    document.getElementById('apt-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authorizing...';
+      btn.style.opacity = '0.7';
+
+      const payload = {
+        doctorId: parseInt(document.getElementById('doctorId').value),
+        patientId: parseInt(document.getElementById('patientId').value),
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        status: document.getElementById('status').value
+      };
+      
+      try {
+        await window.api.createAppointment(payload);
+        e.target.reset();
+        window.showToast("Session confirmed & booked!", "success");
+        loadList();
+      } catch(err) {
+        window.showToast("Failed to book session", "error");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+      }
+    });
+
+    window.delApt = async (id) => {
+      if(confirm('Revoke and cancel this appointment?')) {
+        try {
+          await window.api.deleteAppointment(id);
+          window.showToast("Appointment successfully cancelled", "success");
+          loadList();
+        } catch(err) {
+          window.showToast("Failed to cancel", "error");
+        }
+      }
+    };
+
+    (async () => {
+      await loadDropdowns();
+      await loadList();
+    })();
+  </script>
+</body>
+</html>

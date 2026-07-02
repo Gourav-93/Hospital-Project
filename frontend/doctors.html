@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doctors - MedCare</title>
+  <!-- Premium UI Overhaul -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Glass Navbar -->
+  <nav class="glass-nav" data-aos="fade-down" data-aos-duration="1000">
+    <a href="index.html" class="nav-brand"><i class="fas fa-heartbeat"></i> MedCare</a>
+    <div class="nav-links" style="display: flex; align-items: center;">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="appointments.html">Appointments</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; margin-top: 2rem;" data-aos="fade-up">
+      <div>
+        <h1 class="text-gradient" style="font-size: 3rem;">Doctors Directory</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem;">Manage the elite medical professionals of your institution.</p>
+      </div>
+    </div>
+
+    <!-- Animated Form Card -->
+    <div class="card" data-aos="fade-up" data-aos-delay="100" style="padding: 3rem;">
+      <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-user-plus text-primary"></i> Onboard Doctor</h2>
+      <form id="doc-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; align-items: flex-start;">
+        <div class="form-group"><input type="text" id="name" placeholder=" " required><label>Full Name</label></div>
+        <div class="form-group">
+          <select id="speciality" required>
+            <option value="" disabled selected hidden></option>
+            <option>Cardiology</option>
+            <option>Neurology</option>
+            <option>Pediatrics</option>
+            <option>Orthopedics</option>
+            <option>General Surgery</option>
+          </select>
+          <label>Speciality</label>
+        </div>
+        <div class="form-group"><input type="text" id="edu" placeholder=" " required><label>Qualifications</label></div>
+        <div class="form-group"><input type="number" id="exp" placeholder=" " required><label>Years of Experience</label></div>
+        <div class="form-group"><input type="number" id="fees" placeholder=" " required><label>Consultation Fee ($)</label></div>
+        <div class="form-group"><input type="text" id="avatar" placeholder=" "><label>Avatar URL (Optional)</label></div>
+        
+        <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 1rem;">
+          <button type="submit" class="btn" style="padding: 1rem 2.5rem; box-shadow: var(--shadow-glow-blue);"><i class="fas fa-plus" style="margin-right: 0.75rem;"></i> Create Profile</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Enterprise Table -->
+    <div class="card" data-aos="fade-up" data-aos-delay="200" style="padding: 0; overflow: hidden; background: transparent; border: none; box-shadow: none;">
+      <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-users-cog text-secondary"></i> Active Roster</h2>
+      <div class="table-wrapper">
+        <table id="doctors-table">
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Speciality</th>
+              <th>Qualifications</th>
+              <th>Experience</th>
+              <th>Fees</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="list">
+            <tr><td colspan="6" style="text-align: center; padding: 4rem;"><i class="fas fa-spinner fa-spin text-primary" style="font-size: 2rem;"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- AOS Script -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true, easing: 'ease-out-cubic', duration: 800 });</script>
+
+  <!-- Core Logic -->
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    async function loadList() {
+      try {
+        const data = await window.api.getDoctors();
+        const tbody = document.getElementById('list');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted); font-weight: 500;">No doctors registered yet.</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = data.map((d, index) => `
+          <tr data-aos="fade-up" data-aos-delay="${index * 50}" data-aos-offset="-50">
+            <td>
+              <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div style="width: 50px; height: 50px; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light);">
+                  <img src="${d.avatar || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+                <div>
+                  <strong style="font-size: 1.05rem;">${d.name}</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;"><i class="fas fa-id-badge" style="margin-right:0.3rem;"></i>ID: ${d.id}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="badge badge-primary"><i class="fas fa-stethoscope" style="margin-right: 0.4rem;"></i>${d.speciality}</span></td>
+            <td><i class="fas fa-graduation-cap text-muted" style="margin-right:0.5rem;"></i>${d.edu}</td>
+            <td><strong>${d.exp}</strong> <span class="text-muted">Yrs</span></td>
+            <td style="font-weight: 700; color: var(--text-primary);">$${d.fees}</td>
+            <td style="text-align: right;">
+              <button onclick="delDoctor(${d.id})" class="btn btn-outline" style="padding: 0.5rem; border-color: var(--border-light); color: var(--text-muted);"><i class="fas fa-trash-alt"></i></button>
+            </td>
+          </tr>
+        `).join('');
+        // Re-init AOS for dynamically loaded elements
+        setTimeout(() => { AOS.refresh(); }, 100);
+      } catch (e) {
+        console.error(e);
+        window.showToast("Failed to load doctors", "error");
+      }
+    }
+
+    document.getElementById('doc-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      btn.style.opacity = '0.7';
+      
+      const payload = {
+        name: document.getElementById('name').value,
+        speciality: document.getElementById('speciality').value,
+        edu: document.getElementById('edu').value,
+        exp: parseInt(document.getElementById('exp').value),
+        fees: parseInt(document.getElementById('fees').value),
+        successRate: 95,
+        avatar: document.getElementById('avatar').value
+      };
+      
+      try {
+        await window.api.createDoctor(payload);
+        e.target.reset();
+        window.showToast("Doctor profile created successfully!", "success");
+        loadList();
+      } catch(err) {
+        window.showToast("Failed to create profile", "error");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+      }
+    });
+
+    window.delDoctor = async (id) => {
+      if(confirm('Permanently delete this doctor profile?')) {
+        try {
+          await window.api.deleteDoctor(id);
+          window.showToast("Profile deleted", "success");
+          loadList();
+        } catch(err) {
+          window.showToast("Failed to delete", "error");
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', loadList);
+  </script>
+</body>
+</html>

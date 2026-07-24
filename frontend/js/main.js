@@ -1,19 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Inject Premium Navbar
-  document.body.insertAdjacentHTML('afterbegin', `
-    <nav class="glass-nav">
-      <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 0;">
-        <a href="index.html" class="nav-brand"><i class="fas fa-heartbeat"></i> MedCare</a>
-        <div class="nav-links" style="display: flex; align-items: center;">
-          <a href="dashboard.html" class="nav-item">Dashboard</a>
-          <a href="doctors.html" class="nav-item">Doctors</a>
-          <a href="patients.html" class="nav-item">Patients</a>
-          <a href="appointments.html" class="nav-item">Appointments</a>
-        </div>
-      </div>
-    </nav>
-  `);
-  
   // Highlight active nav item
   const currentPath = window.location.pathname.split('/').pop();
   document.querySelectorAll('.nav-item').forEach(link => {

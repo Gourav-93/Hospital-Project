@@ -93,7 +93,7 @@
           <tr data-aos="fade-up" data-aos-delay="${index * 50}" data-aos-offset="-50">
             <td>
               <div style="display: flex; align-items: center; gap: 1.25rem;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; box-shadow: var(--shadow-sm); border: 2px solid #FFFFFF;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; box-shadow: var(--shadow-sm); border: 2px solid rgba(255,255,255,0.1);">
                   <img src="${p.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'}" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 <div>
@@ -108,7 +108,7 @@
                 <span class="badge badge-warning" style="background: var(--bg-main); border: 1px solid var(--border-light); color: var(--text-primary);"><i class="fas fa-venus-mars text-muted" style="margin-right: 0.4rem;"></i>${p.gender}</span>
               </div>
             </td>
-            <td><span class="badge badge-warning" style="background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A;"><i class="fas fa-virus" style="margin-right: 0.4rem;"></i>${p.symptoms}</span></td>
+            <td><span class="badge badge-warning" style="border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fas fa-virus" style="margin-right: 0.4rem;"></i>${p.symptoms}</span></td>
             <td style="text-align: right;">
               <button onclick="delPatient(${p.id})" class="btn btn-outline" style="padding: 0.5rem; border-color: var(--border-light); color: var(--text-muted);"><i class="fas fa-times"></i></button>
             </td>

@@ -1,4 +1,4 @@
-package com.hospital.backend.Controller;
+package com.hospital.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,32 +12,32 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 
-import com.hospital.backend.Model.AppointmentModel;
-import com.hospital.backend.Repository.AppointmentRepository;
+import com.hospital.backend.model.AppointmentModel;
+import com.hospital.backend.service.AppointmentService;
 
 @RestController
 @CrossOrigin("*")
 public class AppointmentController {
 
     @Autowired
-    private AppointmentRepository appointmentRepository;
+    private AppointmentService appointmentService;
 
     @PostMapping("/api/appointment/add")
     public AppointmentModel bookAppointment(@RequestBody AppointmentModel appointmentmodel) {
-        return appointmentRepository.save(appointmentmodel);
+        return appointmentService.bookAppointment(appointmentmodel);
     }
 
     @GetMapping("/api/appointment")
     public List<AppointmentModel> getappointment() {
-        return appointmentRepository.findAll();
+        return appointmentService.getappointment();
     }
 
     @DeleteMapping("/api/appointment/delete/{id}")
     public String deleteAppointment(@PathVariable Long id) {
-        if (!appointmentRepository.existsById(id)) {
+        if (!appointmentService.existsById(id)) {
             return "Appointment Not Found";
         }
-        appointmentRepository.deleteById(id);
+        appointmentService.deleteAppointment(id);
         return "Appointment Deleted Successfully";
     }
 

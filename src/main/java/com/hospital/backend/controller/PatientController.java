@@ -1,4 +1,4 @@
-package com.hospital.backend.Controller;
+package com.hospital.backend.controller;
 
 import java.util.List;
 
@@ -11,34 +11,34 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hospital.backend.Model.PatientModel;
-import com.hospital.backend.Repository.PatientRepository;
+import com.hospital.backend.model.PatientModel;
+import com.hospital.backend.service.PatientService;
 
 @RestController
 @CrossOrigin("*")
 public class PatientController {
 
     @Autowired
-    private PatientRepository patientRepository;
+    private PatientService patientService;
 
     @PostMapping("/api/patient/add")
     public PatientModel addPatient(@RequestBody PatientModel pateintModel) {
-        return patientRepository.save(pateintModel);
+        return patientService.addPatient(pateintModel);
     }
 
     @GetMapping("/api/patient")
     public List<PatientModel> getPatient() {
-        return patientRepository.findAll();
+        return patientService.getPatient();
     }
 
     @DeleteMapping("/api/patient/delete/{id}")
     public String deletePatient(@PathVariable Long id) {
 
-        if (!patientRepository.existsById(id)) {
+        if (!patientService.existsById(id)) {
             return "Patient Not Found";
         }
 
-        patientRepository.deleteById(id);
+        patientService.deletePatient(id);
         return "Patient Deleted Successfully";
     }
 
